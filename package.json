@@ -1,0 +1,15 @@
+{
+  "name": "leitor-livros",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Catalogador de livros com leitor de código de barras",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "express": "^4.18.2",
+    "node-fetch": "^3.3.2"
+  }
+}

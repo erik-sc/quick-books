@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📚 Minha Biblioteca</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>📚 Minha Biblioteca</h1>
+      <p class="subtitle">Escaneie um código de barras ou busque por título</p>
+    </header>
+
+    <main>
+      <!-- Input principal -->
+      <div class="input-section">
+        <div class="input-wrapper">
+          <input 
+            type="text" 
+            id="inputPrincipal" 
+            placeholder="Escaneie o código de barras ou digite para buscar..." 
+            autofocus
+          >
+          <div class="input-hint">
+            <span id="modoAtual">📷 Modo: Código de Barras</span>
+            <button id="toggleModo" class="btn-toggle">Alternar para Busca</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feedback -->
+      <div id="feedback" class="feedback hidden"></div>
+
+      <!-- Resultados de busca -->
+      <div id="resultadosBusca" class="resultados-busca hidden">
+        <h3>Selecione o livro correto:</h3>
+        <div id="listaResultados"></div>
+        <button id="cancelarBusca" class="btn-cancelar">Cancelar</button>
+      </div>
+
+      <!-- Estatísticas -->
+      <div class="stats">
+        <span id="totalLivros">0 livros</span>
+      </div>
+
+      <!-- Lista de livros -->
+      <div class="livros-section">
+        <h2>Livros Cadastrados</h2>
+        <div id="listaLivros" class="lista-livros"></div>
+        <div id="semLivros" class="sem-livros">
+          <p>📖 Nenhum livro cadastrado ainda</p>
+          <p class="hint">Escaneie um código de barras para começar!</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal de detalhes -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-content">
+      <button class="modal-close">&times;</button>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
