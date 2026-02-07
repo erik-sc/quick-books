@@ -36,39 +36,13 @@ function salvarLivros(livros) {
 
 // Busca livro na Google Books API por ISBN
 async function buscarPorISBN(isbn) {
-  const url = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}&key=${API_KEY}`;
-  const response = await fetch(url);
-  const data = await response.json();
-  
-  if (data.totalItems > 0) {
-    const livro = data.items[0].volumeInfo;
-    return {
-      isbn: isbn,
-      titulo: livro.title || 'Título desconhecido',
-      autores: livro.authors || ['Autor desconhecido'],
-      editora: livro.publisher || 'Editora desconhecida',
-      dataPublicacao: livro.publishedDate || '',
-      descricao: livro.description || '',
-      paginas: livro.pageCount || 0,
-      capa: livro.imageLinks?.thumbnail || '',
-      categorias: livro.categories || [],
-      dataAdicionado: new Date().toISOString()
-    };
-  }
-  return null;
-}
-
-// Busca livro na Google Books API por título
-async function buscarPorTitulo(titulo) {
-  const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(titulo)}&maxResults=5&key=${API_KEY}`;
-  const response = await fetch(url);
-  const data = await response.json();
-  
-  if (data.totalItems > 0) {
-    return data.items.map(item => {
-      const livro = item.volumeInfo;
-      const isbn = livro.industryIdentifiers?.find(id => id.type === 'ISBN_13')?.identifier ||
-                   livro.industryIdentifiers?.find(id => id.type === 'ISBN_10')?.identifier || '';
+  try {
+    const url = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}&key=${API_KEY}`;
+    const response = await fetch(url);
+    const data = await response.json();
+    
+    if (data.totalItems > 0) {
+      const livro = data.items[0].volumeInfo;
       return {
         isbn: isbn,
         titulo: livro.title || 'Título desconhecido',
@@ -78,9 +52,43 @@ async function buscarPorTitulo(titulo) {
         descricao: livro.description || '',
         paginas: livro.pageCount || 0,
         capa: livro.imageLinks?.thumbnail || '',
-        categorias: livro.categories || []
+        categorias: livro.categories || [],
+        dataAdicionado: new Date().toISOString()
       };
-    });
+    }
+  } catch (error) {
+    console.error('Erro ao buscar por ISBN:', error.message);
+  }
+  return null;
+}
+
+// Busca livro na Google Books API por título
+async function buscarPorTitulo(titulo) {
+  try {
+    const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(titulo)}&maxResults=5&key=${API_KEY}`;
+    const response = await fetch(url);
+    const data = await response.json();
+    
+    if (data.totalItems > 0) {
+      return data.items.map(item => {
+        const livro = item.volumeInfo;
+        const isbn = livro.industryIdentifiers?.find(id => id.type === 'ISBN_13')?.identifier ||
+                     livro.industryIdentifiers?.find(id => id.type === 'ISBN_10')?.identifier || '';
+        return {
+          isbn: isbn,
+          titulo: livro.title || 'Título desconhecido',
+          autores: livro.authors || ['Autor desconhecido'],
+          editora: livro.publisher || 'Editora desconhecida',
+          dataPublicacao: livro.publishedDate || '',
+          descricao: livro.description || '',
+          paginas: livro.pageCount || 0,
+          capa: livro.imageLinks?.thumbnail || '',
+          categorias: livro.categories || []
+        };
+      });
+    }
+  } catch (error) {
+    console.error('Erro ao buscar por título:', error.message);
   }
   return [];
 }
@@ -109,7 +117,23 @@ app.post('/api/livros/isbn', async (req, res) => {
   const livro = await buscarPorISBN(isbn);
   
   if (!livro) {
-    return res.status(404).json({ erro: 'Livro não encontrado' });
+    // Salva como incompleto quando o ISBN não é encontrado na API
+    const livroIncompleto = {
+      isbn: isbn,
+      titulo: `ISBN: ${isbn}`,
+      autores: ['Desconhecido'],
+      editora: '',
+      dataPublicacao: '',
+      descricao: '',
+      paginas: 0,
+      capa: '',
+      categorias: [],
+      incompleto: true,
+      dataAdicionado: new Date().toISOString()
+    };
+    livros.unshift(livroIncompleto);
+    salvarLivros(livros);
+    return res.json(livroIncompleto);
   }
 
   // Adiciona no início (pilha)
@@ -150,6 +174,41 @@ app.post('/api/livros/adicionar', (req, res) => {
   livros.unshift(livro);
   salvarLivros(livros);
   
+  res.json(livro);
+});
+
+// POST - Adiciona livro manualmente (título inserido pelo usuário, incompleto)
+app.post('/api/livros/manual', (req, res) => {
+  const { titulo } = req.body;
+
+  if (!titulo || !titulo.trim()) {
+    return res.status(400).json({ erro: 'Título é obrigatório' });
+  }
+
+  const livros = carregarLivros();
+
+  // Verifica duplicata por título
+  if (livros.some(l => l.titulo.toLowerCase() === titulo.trim().toLowerCase())) {
+    return res.status(409).json({ erro: 'Livro já cadastrado' });
+  }
+
+  const livro = {
+    isbn: '',
+    titulo: titulo.trim(),
+    autores: ['Desconhecido'],
+    editora: '',
+    dataPublicacao: '',
+    descricao: '',
+    paginas: 0,
+    capa: '',
+    categorias: [],
+    incompleto: true,
+    dataAdicionado: new Date().toISOString()
+  };
+
+  livros.unshift(livro);
+  salvarLivros(livros);
+
   res.json(livro);
 });
 

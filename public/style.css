@@ -135,8 +135,32 @@ header h1 {
   border: 1px solid rgba(46, 170, 220, 0.2);
 }
 
+.feedback.warning {
+  background: rgba(203, 145, 47, 0.1);
+  color: #cb912f;
+  border: 1px solid rgba(203, 145, 47, 0.2);
+}
+
 .hidden {
   display: none !important;
+}
+
+/* Badge incompleto */
+.badge-incompleto {
+  display: inline-block;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(203, 145, 47, 0.15);
+  color: #cb912f;
+  vertical-align: middle;
+  margin-left: 6px;
+}
+
+/* Manual item style */
+.manual-item {
+  border-style: dashed !important;
 }
 
 /* Resultados de Busca */
